@@ -1,4 +1,5 @@
-TARGET_MODULE:=scdd
+TARGET_MODULE := scdd
+DEV_NAME := scd
 
 obj-m := $(TARGET_MODULE).o
 
@@ -17,14 +18,14 @@ clean:
 	$(MAKE) -C $(BUILDSYSTEM_DIR) M=$(PWD) clean
 
 load:
-	lsmod | grep -q $(TARGET_MODULE) || insmod ./$(TARGET_MODULE).ko
-	if [ ! -c /dev/$(TARGET_MODULE) ];\
-	then mknod /dev/$(TARGET_MODULE) c 236 0; chmod 666 /dev/$(TARGET_MODULE);\
-	else rm /dev/$(TARGET_MODULE); mknod /dev/$(TARGET_MODULE) c 236 0; chmod 666 /dev/$(TARGET_MODULE); fi
+	insmod $(TARGET_MODULE).ko
+	if [ ! -c /dev/$(DEV_NAME) ];\
+	then mknod /dev/$(DEV_NAME) c 236 0; chmod 666 /dev/$(DEV_NAME);\
+	else rm /dev/$(DEV_NAME); mknod /dev/$(DEV_NAME) c 236 0; chmod 666 /dev/$(DEV_NAME); fi
 
 unload:
-	if [ -c /dev/$(TARGET_MODULE) ]; then rm /dev/$(TARGET_MODULE); fi
-	lsmod | grep -q $(TARGET_MODULE) && rmmod ./$(TARGET_MODULE).ko || true
+	if [ -c /dev/$(DEV_NAME) ]; then rm /dev/$(DEV_NAME); fi
+	rmmod $(TARGET_MODULE)
 
 endif
 
