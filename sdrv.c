@@ -6,8 +6,7 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("hdthky");
 
 /*===============================================================================================*/
-static int sdrv_init(void)
-{
+static int sdrv_init(void) {
     int result = 0;
     pr_info("[sdrv] init\n" );
 
@@ -15,8 +14,7 @@ static int sdrv_init(void)
 }
 
 /*===============================================================================================*/
-static void sdrv_exit(void)
-{
+static void sdrv_exit(void) {
     pr_info("[sdrv] exit\n" );
 }
 
