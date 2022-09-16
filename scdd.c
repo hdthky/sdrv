@@ -62,11 +62,35 @@ static long scdd_ioctl(struct file *filp, unsigned int cmd, unsigned long user_b
 }
 
 /*===============================================================================================*/
+static int scdd_flush(struct file *filp, fl_owner_t id) {
+    // pr_debug("[scdd] flush\n");
+
+    return 0;
+}
+
+/*===============================================================================================*/
+static int scdd_release(struct inode *inode, struct file *filp) {
+    // pr_debug("[scdd] release\n");
+
+    return 0;
+}
+
+/*===============================================================================================*/
+static int scdd_mmap(struct file *filp, struct vm_area_struct *vma) {
+    // pr_debug("[scdd] mmap\n");
+
+    return 0;
+}
+
+/*===============================================================================================*/
 static struct file_operations simple_driver_fops = {
     .owner = THIS_MODULE,
     .read = scdd_read,
     .write = scdd_write,
     .unlocked_ioctl = scdd_ioctl,
+    .flush = scdd_flush,
+    .release = scdd_release,
+    .mmap = scdd_mmap,
 };
 
 static int device_file_major_number = 236;
