@@ -9,11 +9,13 @@ ifeq ($(KERNELRELEASE),)
 	PWD:=$(shell pwd)
 
 
-all : 
+.PHONY: all clean load unload test clean_test
+
+all:
 # run kernel build system to make module
 	$(MAKE) -C $(BUILDSYSTEM_DIR) M=$(PWD) modules
 
-clean:
+clean: clean_test
 # run kernel build system to cleanup in current directory
 	$(MAKE) -C $(BUILDSYSTEM_DIR) M=$(PWD) clean
 
@@ -27,5 +29,10 @@ unload:
 	if [ -c /dev/$(DEV_NAME) ]; then rm /dev/$(DEV_NAME); fi
 	rmmod $(TARGET_MODULE)
 
-endif
+test:
+	gcc -g -O0 -o test test.c
 
+clean_test:
+	rm -f test
+
+endif
