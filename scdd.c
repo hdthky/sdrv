@@ -1,3 +1,5 @@
+#define DEBUG
+
 #include <linux/init.h>       /* module_init, module_exit */
 #include <linux/module.h>     /* version info, MODULE_LICENSE, MODULE_AUTHOR, printk() */
 #include <linux/fs.h> 	      /* file stuff */
@@ -16,7 +18,7 @@ MODULE_AUTHOR("hdthky");
 
 /*===============================================================================================*/
 static ssize_t scdd_read(struct file *filp, char __user *user_buffer, size_t count, loff_t *possition) {
-    printk("[scdd] Device file is read at offset = %i, read bytes count = %u\n",
+    pr_debug("[scdd] Device file is read at offset = %i, read bytes count = %u\n",
             (int)*possition, (unsigned int)count);
 
     if (*possition >= scdd_file_size)
@@ -34,7 +36,7 @@ static ssize_t scdd_read(struct file *filp, char __user *user_buffer, size_t cou
 
 /*===============================================================================================*/
 static ssize_t scdd_write(struct file *filp, const char __user *user_buffer, size_t count, loff_t *possition) {
-    printk("[scdd] write\n");
+    pr_debug("[scdd] write\n");
     
     return 1;
 }
@@ -43,7 +45,7 @@ static ssize_t scdd_write(struct file *filp, const char __user *user_buffer, siz
 static long scdd_ioctl(struct file *filp, unsigned int cmd, unsigned long user_buffer) { // 不知为何，cmd为2时，不会进入本函数
     int ret = 0;
 
-    printk("[scdd] ioctl: cmd is %u\n", cmd);
+    pr_debug("[scdd] ioctl: cmd is %u\n", cmd);
 
     switch (cmd) {
     case 3:
@@ -78,7 +80,7 @@ static int scdd_init(void) {
 
     if (ret < 0) {
         device_file_major_number = ret;
-        printk("[scdd] init: register_chrdev failed with error code %i\n", ret);
+        pr_info("[scdd] init: register_chrdev failed with error code %i\n", ret);
         return ret;
     }
 
