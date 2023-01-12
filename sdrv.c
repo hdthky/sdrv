@@ -1,5 +1,6 @@
 #include <linux/init.h>       /* module_init, module_exit */
 #include <linux/module.h>     /* version info, MODULE_LICENSE, MODULE_AUTHOR, printk() */
+#include <linux/slab.h>
 
 MODULE_DESCRIPTION("sdrv (simple driver) in linux");
 MODULE_LICENSE("GPL");
