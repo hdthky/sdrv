@@ -98,9 +98,11 @@ static const char device_name[] = "scd"; // simple char device
 
 /*===============================================================================================*/
 static int scdd_init(void) {
+    int ret;
+
     pr_info("[scdd] init: register chrdev\n");
 
-    int ret = register_chrdev(device_file_major_number, device_name, &simple_driver_fops);
+    ret = register_chrdev(device_file_major_number, device_name, &simple_driver_fops);
 
     if (ret < 0) {
         device_file_major_number = ret;
