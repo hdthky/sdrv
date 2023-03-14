@@ -22,6 +22,8 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     }
 
+    ioctl(fd, 3);
+
     close(fd);
 
     return ret;
