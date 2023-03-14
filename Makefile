@@ -1,5 +1,6 @@
 TARGET_MODULE := scdd
 DEV_NAME := scd
+MAJOR_NUM := 236
 
 obj-m := $(TARGET_MODULE).o
 
@@ -22,8 +23,8 @@ clean: clean_test
 load:
 	insmod $(TARGET_MODULE).ko
 	if [ ! -c /dev/$(DEV_NAME) ];\
-	then mknod /dev/$(DEV_NAME) c 236 0; chmod 666 /dev/$(DEV_NAME);\
-	else rm /dev/$(DEV_NAME); mknod /dev/$(DEV_NAME) c 236 0; chmod 666 /dev/$(DEV_NAME); fi
+	then mknod /dev/$(DEV_NAME) c $(MAJOR_NUM) 0; chmod 666 /dev/$(DEV_NAME);\
+	else rm /dev/$(DEV_NAME); mknod /dev/$(DEV_NAME) c $(MAJOR_NUM) 0; chmod 666 /dev/$(DEV_NAME); fi
 
 unload:
 	if [ -c /dev/$(DEV_NAME) ]; then rm /dev/$(DEV_NAME); fi
