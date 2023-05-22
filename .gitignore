@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 .*
-=======
-.vscode
->>>>>>> 049fd7768c75 (add test framework)
 test
 *.cmd
 *.symvers
