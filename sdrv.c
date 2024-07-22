@@ -10,6 +10,44 @@ MODULE_DESCRIPTION("sdrv (simple driver) in linux");
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("hdthky");
 
+#if defined(CONFIG_X86_64)
+
+#define SDRV_INSTRUCTION_POINTER(pt_regs) ((pt_regs)->ip)
+#define SDRV_SYSCALL_NUM(pt_regs)         ((pt_regs)->ax)
+#define SDRV_FUNC_CALL_ARG0(pt_regs)      ((pt_regs)->di)
+#define SDRV_FUNC_CALL_ARG1(pt_regs)      ((pt_regs)->si)
+#define SDRV_FUNC_CALL_ARG2(pt_regs)      ((pt_regs)->dx)
+#define SDRV_FUNC_CALL_ARG3(pt_regs)      ((pt_regs)->cx)
+#define SDRV_FUNC_CALL_ARG4(pt_regs)      ((pt_regs)->r8)
+#define SDRV_FUNC_CALL_ARG5(pt_regs)      ((pt_regs)->r9)
+#define SDRV_RETURN_VALUE(pt_regs)        ((pt_regs)->ax)
+
+#elif defined(CONFIG_ARM64)
+
+#define SDRV_INSTRUCTION_POINTER(pt_regs) ((pt_regs)->pc)
+#define SDRV_SYSCALL_NUM(pt_regs)         ((pt_regs)->regs[8])
+#define SDRV_FUNC_CALL_ARG0(pt_regs)      ((pt_regs)->regs[0])
+#define SDRV_FUNC_CALL_ARG1(pt_regs)      ((pt_regs)->regs[1])
+#define SDRV_FUNC_CALL_ARG2(pt_regs)      ((pt_regs)->regs[2])
+#define SDRV_FUNC_CALL_ARG3(pt_regs)      ((pt_regs)->regs[3])
+#define SDRV_FUNC_CALL_ARG4(pt_regs)      ((pt_regs)->regs[4])
+#define SDRV_FUNC_CALL_ARG5(pt_regs)      ((pt_regs)->regs[5])
+#define SDRV_RETURN_VALUE(pt_regs)        ((pt_regs)->regs[0])
+
+#elif defined(CONFIG_LOONGARCH)
+
+#define SDRV_INSTRUCTION_POINTER(pt_regs) ((pt_regs)->csr_era)
+#define SDRV_SYSCALL_NUM(pt_regs)         ((pt_regs)->orig_a0)
+#define SDRV_FUNC_CALL_ARG0(pt_regs)      ((pt_regs)->regs[4])
+#define SDRV_FUNC_CALL_ARG1(pt_regs)      ((pt_regs)->regs[5])
+#define SDRV_FUNC_CALL_ARG2(pt_regs)      ((pt_regs)->regs[6])
+#define SDRV_FUNC_CALL_ARG3(pt_regs)      ((pt_regs)->regs[7])
+#define SDRV_FUNC_CALL_ARG4(pt_regs)      ((pt_regs)->regs[8])
+#define SDRV_FUNC_CALL_ARG5(pt_regs)      ((pt_regs)->regs[9])
+#define SDRV_RETURN_VALUE(pt_regs)        ((pt_regs)->regs[4])
+
+#endif
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5,7,0)
 static int init_kallsyms(void) {
         return 0;
@@ -56,20 +94,17 @@ static int rp_entry_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
 }
 
 static int rp_handler(struct kretprobe_instance *ri, struct pt_regs *regs) {
-    char buf[256];
+    struct file *file = (struct file *)SDRV_FUNC_CALL_ARG0(regs);
+    unsigned long prot =  (unsigned long)SDRV_FUNC_CALL_ARG1(regs);
+	unsigned long flags =  (unsigned long)SDRV_FUNC_CALL_ARG2(regs);
 
-    if (!rp_get_cmdline)
-        rp_get_cmdline = (void *)kallsyms_lookup_name("get_cmdline");
-
-    rp_get_cmdline(current, buf, sizeof(buf));
-
-    pr_info("cmdline: %s\n", buf);
+    pr_info("%px %lu %lu\n", file, prot, flags);
 
     return 0;
 }
 
 static struct kretprobe rp = {
-    .kp.symbol_name = "__x64_sys_execve",
+    .kp.symbol_name = "security_mmap_file",
     .data_size = 8,
     .entry_handler = rp_entry_handler,
     .handler = rp_handler,
