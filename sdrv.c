@@ -5,6 +5,8 @@
 #include <linux/version.h>
 #include <linux/kallsyms.h>
 #include <linux/sched.h>
+#include <linux/dcache.h>
+#include <linux/mman.h>
 
 MODULE_DESCRIPTION("sdrv (simple driver) in linux");
 MODULE_LICENSE("GPL");
@@ -84,21 +86,46 @@ static int init_kallsyms(void)
 #endif
 
 int (*rp_get_cmdline)(struct task_struct *task, char *buffer, int buflen);
+char *(*rp_d_absolute_path)(const struct path *, char *, int);
 
 static int rp_entry_handler(struct kretprobe_instance *ri, struct pt_regs *regs) {
-    void *data = ri->data;
+    struct file *file = (struct file *)SDRV_FUNC_CALL_ARG0(regs);
+    unsigned long prot =  (unsigned long)SDRV_FUNC_CALL_ARG1(regs);
+	unsigned long flags =  (unsigned long)SDRV_FUNC_CALL_ARG2(regs);
+    char *pathbuf, *path;
 
-    pr_info("data: %px\n", data);
+    if (strcmp(current->comm, "ls"))
+        return 0;
+
+    if (!file) {
+        pr_info("comm: %s in_execve: %d path: %s is_prot_exec: %d is_map_anonymous: %d\n",
+                current->comm, current->in_execve, "(null)", prot & VM_EXEC ? 1 : 0, flags & MAP_ANONYMOUS ? 1 : 0);
+        return 0;
+    }
+
+    rp_d_absolute_path = (void *)kallsyms_lookup_name("d_absolute_path");
+    if (!rp_d_absolute_path) {
+        pr_info("no symbol\n");
+        return 0;
+    }
+
+    pathbuf = kzalloc(PATH_MAX, GFP_ATOMIC);
+    if (!pathbuf) {
+        pr_info("no memory\n");
+        return 0;
+    }
+
+    path = rp_d_absolute_path(&file->f_path, pathbuf, PATH_MAX);
+
+    pr_info("comm: %s in_execve: %d path: %s is_prot_exec: %d is_map_anonymous: %d\n",
+            current->comm, current->in_execve, path, prot & VM_EXEC ? 1 : 0, flags & MAP_ANONYMOUS ? 1 : 0);
+
+    kfree(pathbuf);
 
     return 0;
 }
 
 static int rp_handler(struct kretprobe_instance *ri, struct pt_regs *regs) {
-    struct file *file = (struct file *)SDRV_FUNC_CALL_ARG0(regs);
-    unsigned long prot =  (unsigned long)SDRV_FUNC_CALL_ARG1(regs);
-	unsigned long flags =  (unsigned long)SDRV_FUNC_CALL_ARG2(regs);
-
-    pr_info("%px %lu %lu\n", file, prot, flags);
 
     return 0;
 }
